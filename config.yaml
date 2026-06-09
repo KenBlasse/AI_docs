@@ -1,0 +1,33 @@
+# Zentrale Anpassung. Hier trägt jeder seine eigenen Typen, Felder und Zielpfade ein,
+# ohne Code zu ändern. Die Skripte (new_doc.py, validate.py) lesen daraus.
+
+# Wohin neu erzeugte Dokumente geschrieben werden ({type}/{slug} werden ersetzt).
+output_dir: "./out"
+
+# Die bekannten Dokumenttypen. Jeder verweist auf Ruleset, Template und Endung.
+types:
+  session-log:
+    rules:    rules/session-log.md
+    template: templates/session-log.md
+    extension: md
+
+  agent-instructions:
+    rules:    rules/agent-instructions.md
+    template: templates/agent-instructions.md
+    extension: md
+
+  spec:
+    rules:    rules/spec.md
+    template: templates/spec.md
+    extension: md
+
+  newsletter:
+    rules:    rules/newsletter.md
+    template: templates/newsletter.html.j2
+    extension: html
+
+# Format-übergreifende Grundregeln, die für alle Typen gelten.
+global_rules: rules/_global.md
+
+# Frontmatter-Schema für die Validierung.
+schema: schemas/frontmatter.yaml

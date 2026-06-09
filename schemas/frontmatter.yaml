@@ -1,0 +1,29 @@
+# Maschinenlesbares Frontmatter-Schema pro Dokumenttyp.
+# validate.py prüft Dokumente hiergegen. new_doc.py kennt daraus die Pflichtfelder.
+#
+# Feld-Definition:
+#   required: muss vorhanden und nicht-leer sein
+#   type:     str | date | enum
+#   values:   erlaubte Werte (nur bei enum)
+
+types:
+  session-log:
+    title:   { required: true,  type: str }
+    type:    { required: true,  type: str }
+    created: { required: true,  type: date }
+
+  agent-instructions:
+    title:   { required: true,  type: str }
+    type:    { required: true,  type: str }
+    created: { required: true,  type: date }
+
+  spec:
+    title:   { required: true,  type: str }
+    type:    { required: true,  type: str }
+    created: { required: true,  type: date }
+    status:  { required: true,  type: enum, values: [draft, approved, implemented] }
+
+  newsletter:
+    # HTML-Zielformat — kein YAML-Frontmatter, daher kein Schema-Eintrag.
+    # Validierung erfolgt über das Ruleset (Inline-CSS, Alt-Text etc.), nicht über Frontmatter.
+    _note: "HTML-Output, kein Frontmatter — von der Frontmatter-Validierung ausgenommen."
