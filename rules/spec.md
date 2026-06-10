@@ -17,9 +17,23 @@ Ein Design- / Konzept-Dokument. Hält fest, *was* gebaut wird und *warum*, **bev
 - Entscheidungen ohne Begründung („wir nehmen X" ohne *warum*).
 - Status-Tracking (gehört ins session-log oder Task-Board).
 
+## Frontmatter-Felder
+
+<!-- FIELDS:start -->
+<!-- generiert aus schemas/frontmatter.yaml via scripts/sync_fields.py — nicht von Hand bearbeiten -->
+
+| Feld | Pflicht | Typ / Werte |
+| --- | --- | --- |
+| `title` | ja | Text (nicht leer) |
+| `type` | ja | `spec` (fest) |
+| `created` | ja | Datum (`YYYY-MM-DD`) |
+| `status` | ja | `draft` / `approved` / `implemented` |
+
+<!-- FIELDS:end -->
+
 ## Form
 
-- Status im Frontmatter (`draft` / `approved` / `implemented`).
+- `status` setzt den Stand des Dokuments (siehe Tabelle oben).
 - Ein Kurz-Zitat-Block oben (`>`) mit Stand und Herkunft des Dokuments.
 - Entscheidungen als Tabelle, nicht als Fließtext — macht Trade-offs vergleichbar.
 

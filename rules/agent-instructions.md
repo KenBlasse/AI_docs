@@ -2,6 +2,19 @@
 
 Eine Instruktions-Datei für einen AI-Assistenten in einem Projekt (z. B. eine `CLAUDE.md`, `AGENTS.md` oder vergleichbar). Sagt der AI, *wie* sie in diesem Projekt arbeiten soll.
 
+## Frontmatter-Felder
+
+<!-- FIELDS:start -->
+<!-- generiert aus schemas/frontmatter.yaml via scripts/sync_fields.py — nicht von Hand bearbeiten -->
+
+| Feld | Pflicht | Typ / Werte |
+| --- | --- | --- |
+| `title` | ja | Text (nicht leer) |
+| `type` | ja | `agent-instructions` (fest) |
+| `created` | ja | Datum (`YYYY-MM-DD`) |
+
+<!-- FIELDS:end -->
+
 ## Was gehört rein
 
 - **Kritische Pflicht-Regeln zuerst** — als abgesetzter Block mit `**PFLICHT:**`-Label, ganz oben.

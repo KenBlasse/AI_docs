@@ -132,8 +132,12 @@ AI_docs/
 │
 └── scripts/               # Logik (Python + Jinja2) — nur die drei Bausteine
     ├── new_doc.py         #   Typ wählen → Template rendern → Zieldatei
-    └── validate.py        #   Doc gegen Schema/Regeln prüfen
+    ├── validate.py        #   Doc gegen Schema/Regeln prüfen
+    └── sync_fields.py     #   Feld-Tabellen der Rules aus dem Schema erzeugen (+ --check)
 ```
+
+> **INFO — Eine Quelle der Wahrheit für Felder:**
+> Pflichtfelder leben **nur** in `schemas/frontmatter.yaml`. Die „Frontmatter-Felder"-Tabelle in jeder Rule wird daraus generiert (`sync_fields.py`, Marker `<!-- FIELDS:start/end -->`), und `--check` meldet Drift zwischen Schema, Rules und Template-Frontmatter — pre-commit-/CI-tauglich.
 
 **Anpassung:** Zwei Ebenen, bewusst kombiniert.
 - `config.yaml` für Häufiges (eigene Typen, Frontmatter-Felder, Zielpfade) — ohne Code anzufassen.
@@ -153,8 +157,9 @@ Nutzt ein mitgeliefertes Starter-Set, erzeugt ein korrekt strukturiertes Dokumen
 1. `prompts/describe-type.md` ausfüllen (Was, für wen, welches Format).
 2. Ausgefüllte Vorlage + `prompts/make-ruleset.md` einer AI geben → `rules/<typ>.md` entsteht.
 3. Dasselbe mit `prompts/make-template.md` → `templates/<typ>.*`.
-4. `python scripts/validate.py` prüft das Ergebnis.
-5. Typ in `config.yaml` eintragen — fertig, ab jetzt via `new_doc.py` nutzbar.
+4. Feld-Definition in `schemas/frontmatter.yaml` ergänzen, dann `python scripts/sync_fields.py` — schreibt die Feld-Tabelle in die Rule.
+5. `python scripts/validate.py` prüft das Ergebnis.
+6. Typ in `config.yaml` eintragen — fertig, ab jetzt via `new_doc.py` nutzbar.
 
 ### C) Bestehendes Dokument prüfen
 ```bash
