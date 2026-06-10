@@ -39,6 +39,13 @@ def parse_fields(pairs: list[str]) -> dict[str, str]:
     return fields
 
 
+def load_config() -> dict:
+    """Lädt config.yaml. Gekapselt, damit Tests gezielt nur das Config-Laden
+    umlenken können, ohne yaml.safe_load global zu patchen (was sonst auch den
+    nachgelagerten Validator beim --validate-Lauf verseuchen würde)."""
+    return yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
+
+
 def unique_path(out_dir: Path, slug: str, ext: str) -> Path:
     """Gibt einen noch nicht existierenden Pfad zurück (slug, slug-2, slug-3, …)."""
     candidate = out_dir / f"{slug}.{ext}"
@@ -49,6 +56,29 @@ def unique_path(out_dir: Path, slug: str, ext: str) -> Path:
     return candidate
 
 
+def validate_output(out_file: Path, extension: str, rendered: str) -> bool:
+    """Prüft das frisch erzeugte Dokument mit dem passenden Validator.
+
+    HTML (Newsletter) → validate_newsletter, sonst Frontmatter/Schema → validate.
+    Gibt True zurück, wenn ok; sonst werden die Fehler ausgegeben und False geliefert.
+    Die Validatoren liegen im selben scripts/-Verzeichnis und werden als Lib genutzt.
+    """
+    if extension in ("html", "htm"):
+        import validate_newsletter
+        errors = validate_newsletter.validate_html(rendered)
+    else:
+        import validate
+        errors = validate.validate_file(out_file)
+
+    if errors:
+        print(f"UNGÜLTIG: {out_file}")
+        for e in errors:
+            print(f"  - {e}")
+        return False
+    print(f"OK (validiert): {out_file}")
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Neues Dokument aus Template erzeugen.")
     parser.add_argument("type", help="Dokumenttyp (siehe config.yaml)")
@@ -57,6 +87,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Optionales Template-Feld setzen (mehrfach möglich)")
     parser.add_argument("--force", action="store_true",
                         help="Vorhandene Datei überschreiben statt zu nummerieren")
+    parser.add_argument("--validate", action="store_true",
+                        help="Erzeugtes Dokument direkt prüfen (Frontmatter/Schema bzw. Newsletter-HTML)")
     args = parser.parse_args(argv)
 
     try:
@@ -66,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        config = yaml.safe_load((ROOT / "config.yaml").read_text())
+        config = load_config()
     except (OSError, yaml.YAMLError) as exc:
         print(f"config.yaml nicht lesbar: {exc}")
         return 1
@@ -121,10 +153,13 @@ def main(argv: list[str] | None = None) -> int:
         out_file = out_dir / f"{slug}.{extension}"
     else:
         out_file = unique_path(out_dir, slug, extension)
-    out_file.write_text(rendered)
+    out_file.write_text(rendered, encoding="utf-8")
 
     print(f"Erstellt: {out_file}")
     print(f"Regeln dazu: {spec.get('rules', '—')} (+ {global_rules})")
+
+    if args.validate and not validate_output(out_file, extension, rendered):
+        return 1
     return 0
 
 

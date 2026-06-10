@@ -15,6 +15,7 @@ Usage:
 Exit: 0 = ok, 1 = Fehler gefunden, 2 = Aufruffehler
 """
 import argparse
+import re
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
@@ -24,6 +25,12 @@ ROOT = Path(__file__).resolve().parent.parent
 # void elements brauchen kein schließendes Tag (HTML5)
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input",
         "link", "meta", "param", "source", "track", "wbr"}
+
+# Echtes max-width:<px> mit plausibler Obergrenze (Mail-Body sollte ~600px sein,
+# großzügig bis 1000px). Substring-Match würde "max-widthhack" oder "max-width:9999px"
+# fälschlich als gültigen Container durchgehen lassen.
+MAX_WIDTH_RE = re.compile(r"max-width\s*:\s*(\d+)\s*px", re.IGNORECASE)
+MAX_WIDTH_LIMIT_PX = 1000
 
 
 class NewsletterParser(HTMLParser):
@@ -39,7 +46,6 @@ class NewsletterParser(HTMLParser):
         self.has_max_width = False
         self.title_text = ""
         self.in_title = False
-        self._depth_at_head_style: list[str] = []
         self.style_in_head = False
         self.in_head = False
 
@@ -56,10 +62,13 @@ class NewsletterParser(HTMLParser):
             self.in_title = True
         if tag == "script":
             self.has_script = True
-        if tag == "img" and not attrs_d.get("alt"):
+        # alt="" ist für dekorative Bilder der a11y-korrekte Weg (WCAG) — nur ein
+        # komplett fehlendes alt-Attribut ist ein Fehler.
+        if tag == "img" and "alt" not in attrs_d:
             self.imgs_without_alt += 1
         style = attrs_d.get("style", "")
-        if "max-width" in style:
+        m = MAX_WIDTH_RE.search(style)
+        if m and int(m.group(1)) <= MAX_WIDTH_LIMIT_PX:
             self.has_max_width = True
 
     def handle_endtag(self, tag):
@@ -125,7 +134,7 @@ def render_template() -> str:
     import yaml
     from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-    config = yaml.safe_load((ROOT / "config.yaml").read_text())
+    config = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
     tpl_rel = Path(config["types"]["newsletter"]["template"])
     env = Environment(  # nosemgrep: direct-use-of-jinja2 — autoescape via select_autoescape gesetzt
         loader=FileSystemLoader(str(ROOT / tpl_rel.parent)),
@@ -153,7 +162,7 @@ def main(argv: list[str] | None = None) -> int:
         if not path.is_file():
             print(f"Datei nicht gefunden: {path}")
             return 2
-        jobs.append((str(path), path.read_text()))
+        jobs.append((str(path), path.read_text(encoding="utf-8")))
 
     exit_code = 0
     for name, html in jobs:

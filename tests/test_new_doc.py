@@ -51,11 +51,16 @@ def test_unique_path_numbers_collisions(tmp_path):
 # --- main() Ende-zu-Ende über echte Templates/Config ---
 
 def _out(monkeypatch, tmp_path):
-    """Lenkt output_dir auf tmp_path, sonst echte config/templates."""
+    """Lenkt output_dir auf tmp_path, sonst echte config/templates.
+
+    Patcht gezielt new_doc.load_config (nicht yaml.safe_load global) — sonst würde
+    der bei --validate nachgelagerte Validator dieselbe gepatchte safe_load sehen
+    und das Schema nicht mehr laden können.
+    """
     import yaml
     cfg = yaml.safe_load((ROOT / "config.yaml").read_text())
     cfg["output_dir"] = str(tmp_path)
-    monkeypatch.setattr(new_doc.yaml, "safe_load", lambda *_: cfg)
+    monkeypatch.setattr(new_doc, "load_config", lambda: cfg)
     return tmp_path
 
 
@@ -82,3 +87,23 @@ def test_main_no_force_does_not_overwrite(monkeypatch, tmp_path):
     new_doc.main(["session-log", "Doppelt"])
     files = sorted(p.name for p in (out / "session-log").glob("*.md"))
     assert files == ["doppelt-2.md", "doppelt.md"]
+
+
+# --- --validate (Prüfung direkt beim Erzeugen) ---
+
+def test_main_validate_markdown_ok(monkeypatch, tmp_path):
+    """Ein erzeugtes Markdown-Doc validiert sauber → Exit 0."""
+    _out(monkeypatch, tmp_path)
+    assert new_doc.main(["session-log", "Geprüft", "--validate"]) == 0
+
+
+def test_main_validate_newsletter_ok(monkeypatch, tmp_path):
+    """Das gehärtete Newsletter-Template validiert sauber → Exit 0."""
+    _out(monkeypatch, tmp_path)
+    assert new_doc.main(["newsletter", "Mail", "--validate"]) == 0
+
+
+def test_main_validate_catches_invalid(monkeypatch, tmp_path):
+    """Ein ungültiges Feld (Schema verbietet unbekannte Keys) → Exit 1 mit --validate."""
+    _out(monkeypatch, tmp_path)
+    assert new_doc.main(["spec", "Kaputt", "--field", "status=gibtsnicht", "--validate"]) == 1

@@ -25,7 +25,7 @@ SCHEMA_PATH = ROOT / "schemas" / "frontmatter.yaml"
 @lru_cache(maxsize=1)
 def load_schemas() -> dict:
     """Lädt die JSON-Schema-Definitionen pro Typ aus schemas/frontmatter.yaml."""
-    data = yaml.safe_load(SCHEMA_PATH.read_text()) or {}
+    data = yaml.safe_load(SCHEMA_PATH.read_text(encoding="utf-8")) or {}
     return data.get("types", {})
 
 

@@ -29,6 +29,12 @@ def test_img_with_alt_passes():
     assert not any("alt" in e for e in vn.validate_html(html))
 
 
+def test_img_with_empty_alt_passes():
+    """alt='' ist für dekorative Bilder a11y-korrekt (WCAG) — kein Fehler."""
+    html = "<html><head><title>T</title></head><body><div style='max-width:600px'><img src='a.png' alt=''></div></body></html>"
+    assert not any("alt" in e for e in vn.validate_html(html))
+
+
 def test_missing_title_is_rejected():
     html = "<html><head><title></title></head><body><div style='max-width:600px'>x</div></body></html>"
     assert any("title" in e.lower() for e in vn.validate_html(html))
@@ -42,6 +48,18 @@ def test_unbalanced_tags_are_rejected():
 
 def test_missing_max_width_is_rejected():
     html = "<html><head><title>T</title></head><body><p>kein container</p></body></html>"
+    assert any("max-width" in e for e in vn.validate_html(html))
+
+
+def test_max_width_substring_does_not_count():
+    """'max-width' als Substring ohne echten px-Wert zählt nicht als Container."""
+    html = "<html><head><title>T</title></head><body><p style='max-widthhack'>x</p></body></html>"
+    assert any("max-width" in e for e in vn.validate_html(html))
+
+
+def test_oversized_max_width_is_rejected():
+    """Ein absurd großer max-width-Wert ist kein gültiger Mail-Container."""
+    html = "<html><head><title>T</title></head><body><div style='max-width:9999px'>x</div></body></html>"
     assert any("max-width" in e for e in vn.validate_html(html))
 
 

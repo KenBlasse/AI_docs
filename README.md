@@ -12,8 +12,9 @@ Repo: https://github.com/KenBlasse/AI_docs
 python -m venv .venv && source .venv/bin/activate   # oder: uv venv .venv
 pip install -r requirements.txt
 
-python scripts/new_doc.py session-log "Mein erster Eintrag"   # Dokument erzeugen
-python scripts/validate.py out/session-log/mein-erster-eintrag.md   # prüfen
+python scripts/new_doc.py session-log "Mein erster Eintrag" --validate   # erzeugen + prüfen
+# oder getrennt prüfen:
+python scripts/validate.py out/session-log/mein-erster-eintrag.md
 ```
 
 ---
@@ -131,7 +132,7 @@ AI_docs/
 │   └── frontmatter.yaml   #   Pflichtfelder, Typen, enum, Datumsformat, additionalProperties
 │
 └── scripts/               # Logik (Python + Jinja2) — nur die drei Bausteine
-    ├── new_doc.py             #   Typ wählen → Template rendern → Zieldatei
+    ├── new_doc.py             #   Typ wählen → Template rendern → Zieldatei (+ --validate)
     ├── validate.py            #   Doc-Frontmatter gegen Schema prüfen
     ├── validate_newsletter.py #   Newsletter-HTML: Wohlgeformtheit + Mail-Client-Härtung
     ├── validate_config.py     #   config.yaml & frontmatter.yaml gegen Meta-Schema
@@ -157,8 +158,11 @@ dieselben Checks vor jedem Commit über die geänderten Dateien laufen.
 ```bash
 python scripts/new_doc.py session-log "Mein erster Eintrag"
 python scripts/new_doc.py spec "API-Umbau" --field status=approved
+python scripts/new_doc.py newsletter "Release 1.0" --validate   # erzeugen + sofort prüfen
 ```
-Nutzt ein mitgeliefertes Starter-Set, erzeugt ein korrekt strukturiertes Dokument. Kein Setup nötig. Optionale Template-Felder lassen sich mit `--field KEY=WERT` direkt setzen (mehrfach möglich); ohne Angabe bleiben die Default-Prompts im Dokument, die du im Editor ausfüllst. Gleicher Titel zweimal → die Datei wird nummeriert (`-2`, `-3`), nicht überschrieben (`--force` erzwingt Überschreiben).
+Nutzt ein mitgeliefertes Starter-Set, erzeugt ein korrekt strukturiertes Dokument. Kein Setup nötig. Optionale Template-Felder lassen sich mit `--field KEY=WERT` direkt setzen (mehrfach möglich); ohne Angabe bleiben die Default-Prompts im Dokument, die du im Editor ausfüllst. Gleicher Titel zweimal → die Datei wird nummeriert (`-2`, `-3`), nicht überschrieben (`--force` erzwingt Überschreiben). Mit `--validate` wird das frisch erzeugte Dokument direkt geprüft (Markdown gegen Frontmatter/Schema, Newsletter gegen die HTML-Härtung) und bei einem Verstoß ein Fehler mit Exit-Code 1 gemeldet — passend für den Fluss *erzeugen → prüfen → ins Zielprojekt übernehmen*.
+
+> Erzeugte Dokumente landen in `out/<typ>/` — einem **lokalen Staging-Ordner** (`.gitignore`). Von dort wandern die geprüften Dateien in ihr Zielprojekt. `out/` wird bewusst nicht versioniert; die automatische Validierung (CI, pre-commit) prüft daher die mitgelieferten Beispiel-Dokumente, nicht `out/`. Die Prüfung deiner eigenen Docs gehört an die Stelle, wo sie entstehen — dafür ist `--validate` da.
 
 ### B) Eigenen Typ mit AI erstellen
 1. `prompts/describe-type.md` ausfüllen (Was, für wen, welches Format).
@@ -197,9 +201,9 @@ Auch für Markdown-Templates. Ein einziger Renderer für alle Formate, reine Pla
 - [x] `config.yaml` + `schemas/frontmatter.yaml` (einzige Quelle der Wahrheit für Felder)
 - [x] Prompt-Vorlagen: `describe-type`, `make-ruleset`, `make-template`
 - [x] Starter-Bibliothek (5 Sets): `_global`, `session-log`, `agent-instructions`, `spec`, `newsletter`
-- [x] `new_doc.py` (Jinja2-Rendering, `--field`, Kollisionsschutz, autoescape)
+- [x] `new_doc.py` (Jinja2-Rendering, `--field`, `--validate`, Kollisionsschutz, autoescape)
 - [x] `validate.py` (Frontmatter/JSON Schema), `validate_newsletter.py` (HTML-Härtung), `validate_config.py` (Meta-Schema), `sync_fields.py` (Rule-Tabellen aus Schema, `--check`)
-- [x] CI (`.github/workflows/ci.yml`) + pre-commit (`.pre-commit-config.yaml`); 48 pytest-Tests
+- [x] CI (`.github/workflows/ci.yml`) + pre-commit (`.pre-commit-config.yaml`); 52 pytest-Tests
 
 ## Mögliche nächste Schritte
 
