@@ -1,29 +1,42 @@
 # Maschinenlesbares Frontmatter-Schema pro Dokumenttyp.
-# validate.py prüft Dokumente hiergegen. new_doc.py kennt daraus die Pflichtfelder.
+# validate.py prüft Dokumente hiergegen mit echtem JSON Schema (Draft 2020-12).
 #
-# Feld-Definition:
-#   required: muss vorhanden und nicht-leer sein
-#   type:     str | date | enum
-#   values:   erlaubte Werte (nur bei enum)
+# Pro Typ steht unter `types.<typ>` ein vollständiges JSON Schema. Dadurch gibt es
+# Typprüfung, Pattern, Datumsformat und additionalProperties (warnt vor Tippfehlern
+# in Feldnamen) gratis — ohne eigenen Validierungscode.
+#
+# Hinweis: created wird als ISO-Datum (YYYY-MM-DD) geprüft. validate.py normalisiert
+# YAML-Date-Objekte vorher zu Strings, damit "format": "date" greift.
 
 types:
   session-log:
-    title:   { required: true,  type: str }
-    type:    { required: true,  type: str }
-    created: { required: true,  type: date }
+    type: object
+    additionalProperties: false
+    required: [title, type, created]
+    properties:
+      title:   { type: string, minLength: 1 }
+      type:    { const: session-log }
+      created: { type: string, format: date }
 
   agent-instructions:
-    title:   { required: true,  type: str }
-    type:    { required: true,  type: str }
-    created: { required: true,  type: date }
+    type: object
+    additionalProperties: false
+    required: [title, type, created]
+    properties:
+      title:   { type: string, minLength: 1 }
+      type:    { const: agent-instructions }
+      created: { type: string, format: date }
 
   spec:
-    title:   { required: true,  type: str }
-    type:    { required: true,  type: str }
-    created: { required: true,  type: date }
-    status:  { required: true,  type: enum, values: [draft, approved, implemented] }
+    type: object
+    additionalProperties: false
+    required: [title, type, created, status]
+    properties:
+      title:   { type: string, minLength: 1 }
+      type:    { const: spec }
+      created: { type: string, format: date }
+      status:  { enum: [draft, approved, implemented] }
 
-  newsletter:
-    # HTML-Zielformat — kein YAML-Frontmatter, daher kein Schema-Eintrag.
-    # Validierung erfolgt über das Ruleset (Inline-CSS, Alt-Text etc.), nicht über Frontmatter.
-    _note: "HTML-Output, kein Frontmatter — von der Frontmatter-Validierung ausgenommen."
+  # newsletter: HTML-Output, kein YAML-Frontmatter — von der Frontmatter-Validierung
+  # ausgenommen. Eigene Validierung (Wohlgeformtheit, Pflicht-Kontextvariablen) ist
+  # als späterer Schritt dokumentiert, siehe rules/newsletter.md.
