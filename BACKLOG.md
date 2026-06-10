@@ -1,12 +1,15 @@
-# Backlog — offene Verbesserungen aus der Code-Review
+# Backlog — Verbesserungen aus der Code-Review
 
-Stand: 2026-06-10. Umgesetzt sind **#1 (echtes Frontmatter-Parsing + JSON Schema)**,
-**#3 (Datumsformat wird erzwungen)** — siehe `scripts/validate.py`,
-`schemas/frontmatter.yaml`, `tests/` —, **#6 (Callout-Anspruch tool-neutral)**
-, **#2 (eine Quelle der Wahrheit für Felder)** und
-**#5 (new_doc.py: Kontextfelder & Robustheit)**.
+Stand: 2026-06-10. **Alle Punkte umgesetzt** (#1–#7):
 
-Die folgenden Punkte sind bewusst zurückgestellt, nach Wirkung sortiert.
+- **#1** echtes Frontmatter-Parsing + JSON Schema, **#3** Datumsformat erzwungen
+- **#2** eine Quelle der Wahrheit für Felder (`sync_fields.py`)
+- **#4** Newsletter-HTML-Validierung (`validate_newsletter.py`)
+- **#5** `new_doc.py`: Kontextfelder (`--field`) & Robustheit
+- **#6** Callout-Anspruch tool-neutral
+- **#7** Tooling-Hygiene (Fixtures, CI, Pre-commit, Meta-Schema)
+
+Details je Punkt unten.
 
 ---
 
@@ -23,15 +26,17 @@ Template-Frontmatter (pre-commit-/CI-tauglich), abgesichert durch `tests/test_sy
 
 ---
 
-## #4 — Newsletter (HTML) ist ein blinder Fleck
+## ✅ #4 — Newsletter (HTML) ist ein blinder Fleck (erledigt)
 
-**Problem:** Der HTML-Typ ist komplett von der Validierung ausgenommen — also
-genau der Typ, der am ehesten kaputtgeht (Jinja2→HTML, Mail-Client-Quirks).
+**War:** Der HTML-Typ war komplett von der Validierung ausgenommen — genau der
+Typ, der am ehesten kaputtgeht (Jinja2→HTML, Mail-Client-Quirks).
 
-**Nächster Schritt:**
-- Template rendern und mit `html.parser`/`lxml` auf Wohlgeformtheit prüfen.
-- Optional: Pflicht-Kontextvariablen (Betreff, Preheader) deklarieren und prüfen,
-  dass sie gesetzt sind.
+**Umgesetzt:** `scripts/validate_newsletter.py` prüft fertiges HTML (stdlib
+`html.parser`, keine Extra-Dependency): Wohlgeformtheit (balancierte Tags),
+Pflicht-Kontext (`title` gesetzt) und die Härtungsregeln aus `rules/newsletter.md`
+(kein `<script>`, `alt`-Texte, `max-width`-Container, kein `<style>` im `<head>`).
+`--template` rendert + prüft das Standard-Template. Abgesichert durch
+`tests/test_validate_newsletter.py`; Rule + Schema-Kommentar verweisen darauf.
 
 ---
 
@@ -69,15 +74,15 @@ Callout-fähigen Umgebung arbeitet, kann das typ-spezifische Ruleset überschrei
 
 ---
 
-## #7 — Tooling-Hygiene (Framework für andere)
+## ✅ #7 — Tooling-Hygiene (erledigt)
 
-- **Tests:** Grundstein gelegt (`tests/`, je valide + invalide Fixtures pro Typ).
-  Noch offen: Fixtures für `agent-instructions`, Newsletter-Tests (hängt an #4).
-- **CI:** GitHub Action, die `validate.py` über alle `out/`-Dokumente + Fixtures
-  laufen lässt.
-- **Pre-commit-Hook** mit `validate.py` — der eigentliche Killer-Use-Case: ein
-  Doc, der gegen sein eigenes Ruleset verstößt, wird beim Commit blockiert.
-  (`validate.py` nimmt jetzt mehrere Pfade als Argumente — pre-commit-tauglich.)
-- **Meta-Schema:** `config.yaml` und `schemas/frontmatter.yaml` selbst gegen ein
-  Meta-Schema validieren, damit ein Tippfehler in der Config nicht erst zur
-  Laufzeit auffällt.
+- **Tests/Fixtures:** valide + invalide Fixtures jetzt auch für `agent-instructions`;
+  Newsletter über `test_validate_newsletter.py` (aus #4). Insgesamt 48 Tests.
+- **CI:** `.github/workflows/ci.yml` — bei Push/PR: pytest + alle Validatoren
+  (`validate_config`, `sync_fields --check`, `validate_newsletter --template`,
+  `validate.py` über Fixtures/`out`).
+- **Pre-commit-Hook:** `.pre-commit-config.yaml` (lokale Hooks) blockiert beim
+  Commit Docs, die gegen Schema/Härtung/Sync verstoßen.
+- **Meta-Schema:** `scripts/validate_config.py` prüft `config.yaml` und
+  `schemas/frontmatter.yaml` strukturell + Kreuz-Konsistenz (jeder Typ hat Schema,
+  referenzierte Dateien existieren) — Tippfehler fällt vor der Laufzeit auf.

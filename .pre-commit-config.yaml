@@ -1,0 +1,30 @@
+# Pre-commit-Hooks für AI_docs. Aktivieren: pip install pre-commit && pre-commit install
+# Danach laufen die Checks bei jedem Commit über die geänderten Dateien.
+repos:
+  - repo: local
+    hooks:
+      - id: validate-frontmatter
+        name: Frontmatter gegen Schema validieren
+        entry: python scripts/validate.py
+        language: system
+        files: '^(out|tests/fixtures/valid)/.*\.md$'
+
+      - id: validate-newsletter
+        name: Newsletter-HTML härten
+        entry: python scripts/validate_newsletter.py
+        language: system
+        files: '^out/newsletter/.*\.html$'
+
+      - id: sync-fields
+        name: Rule-Felder mit Schema in Sync
+        entry: python scripts/sync_fields.py --check
+        language: system
+        pass_filenames: false
+        files: '^(schemas/frontmatter\.yaml|rules/.*\.md|templates/.*\.md)$'
+
+      - id: validate-config
+        name: config.yaml & Schema konsistent
+        entry: python scripts/validate_config.py
+        language: system
+        pass_filenames: false
+        files: '^(config\.yaml|schemas/frontmatter\.yaml|rules/|templates/)'

@@ -131,10 +131,16 @@ AI_docs/
 │   └── frontmatter.yaml   #   Pflichtfelder, Typen, enum, Datumsformat, additionalProperties
 │
 └── scripts/               # Logik (Python + Jinja2) — nur die drei Bausteine
-    ├── new_doc.py         #   Typ wählen → Template rendern → Zieldatei
-    ├── validate.py        #   Doc gegen Schema/Regeln prüfen
-    └── sync_fields.py     #   Feld-Tabellen der Rules aus dem Schema erzeugen (+ --check)
+    ├── new_doc.py             #   Typ wählen → Template rendern → Zieldatei
+    ├── validate.py            #   Doc-Frontmatter gegen Schema prüfen
+    ├── validate_newsletter.py #   Newsletter-HTML: Wohlgeformtheit + Mail-Client-Härtung
+    ├── validate_config.py     #   config.yaml & frontmatter.yaml gegen Meta-Schema
+    └── sync_fields.py         #   Feld-Tabellen der Rules aus dem Schema erzeugen (+ --check)
 ```
+
+**Qualitäts-Gates:** `.github/workflows/ci.yml` (Tests + alle Validatoren bei Push/PR)
+und `.pre-commit-config.yaml` (`pip install pre-commit && pre-commit install`) lassen
+dieselben Checks vor jedem Commit über die geänderten Dateien laufen.
 
 > **INFO — Eine Quelle der Wahrheit für Felder:**
 > Pflichtfelder leben **nur** in `schemas/frontmatter.yaml`. Die „Frontmatter-Felder"-Tabelle in jeder Rule wird daraus generiert (`sync_fields.py`, Marker `<!-- FIELDS:start/end -->`), und `--check` meldet Drift zwischen Schema, Rules und Template-Frontmatter — pre-commit-/CI-tauglich.
@@ -164,9 +170,10 @@ Nutzt ein mitgeliefertes Starter-Set, erzeugt ein korrekt strukturiertes Dokumen
 
 ### C) Bestehendes Dokument prüfen
 ```bash
-python scripts/validate.py pfad/zur/datei.md
+python scripts/validate.py pfad/zur/datei.md          # Markdown-Typen: Frontmatter/Schema
+python scripts/validate_newsletter.py mail.html       # Newsletter: HTML-Härtung
 ```
-Frontmatter gegen das JSON Schema des Typs geprüft (Pflichtfelder, Typen, enum, Datumsformat, unbekannte Felder) → klare Fehlerliste. Nimmt mehrere Pfade auf einmal, taugt damit als Pre-Commit-Hook. (Pflicht-Sections- und Tote-Links-Checks sind noch offen, siehe unten.)
+Markdown-Dokumente: Frontmatter gegen das JSON Schema des Typs geprüft (Pflichtfelder, Typen, enum, Datumsformat, unbekannte Felder). Newsletter: das fertige HTML auf Wohlgeformtheit, gesetzten `title` und Mail-Client-Härtung (kein `<script>`, `alt`-Texte, `max-width`-Container, kein `<style>` im `<head>`). Beide nehmen mehrere Pfade, taugen damit als Pre-Commit-Hook. (Pflicht-Sections- und Tote-Links-Checks sind noch offen, siehe unten.)
 
 ---
 
@@ -196,6 +203,6 @@ Auch für Markdown-Templates. Ein einziger Renderer für alle Formate, reine Pla
 
 - [ ] `validate.py` um Section-Check (Pflicht-Überschriften vorhanden?) und Tote-Links-Check erweitern
 - [ ] Mehr Starter-Sets (z. B. `meeting-notes`, `adr`)
-- [ ] Optionaler Lint speziell für Newsletter-HTML (Inline-CSS / Alt-Text durchsetzen)
-- [ ] Pre-Commit-Hook-Beispiel, das `validate.py` über geänderte Docs laufen lässt
+- [x] Lint für Newsletter-HTML (Alt-Text, `max-width`, kein `<script>`/`<style>`-Head) → `validate_newsletter.py`
+- [x] Pre-Commit-Hook + CI, die die Validatoren über geänderte Docs laufen lassen → `.pre-commit-config.yaml`, `.github/workflows/ci.yml`
 ```
