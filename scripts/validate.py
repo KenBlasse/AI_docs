@@ -1,77 +1,95 @@
 #!/usr/bin/env python3
-"""Prüft ein Dokument gegen sein Frontmatter-Schema.
+"""Prüft ein Dokument gegen sein Frontmatter-Schema (echtes JSON Schema).
 
-Usage: python scripts/validate.py <pfad-zur-datei>
-Exit:  0 = ok, 1 = Fehler gefunden, 2 = Aufruffehler
+Frontmatter wird mit python-frontmatter geparst (robust gegen --- im Body,
+mehrzeilige Werte, Code-Fences) und mit jsonschema/Draft 2020-12 validiert.
+Daraus ergeben sich Typprüfung, Pattern, Datumsformat und additionalProperties
+gratis — ohne eigenen Feld-für-Feld-Validierungscode.
+
+Usage: python scripts/validate.py <pfad-zur-datei> [<weitere> ...]
+Exit:  0 = alle ok, 1 = Fehler gefunden, 2 = Aufruffehler
 """
+import datetime
 import sys
-import re
+from functools import lru_cache
 from pathlib import Path
 
+import frontmatter
 import yaml
+from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parent.parent
-FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+SCHEMA_PATH = ROOT / "schemas" / "frontmatter.yaml"
 
 
-def parse_frontmatter(text: str):
-    m = FRONTMATTER_RE.match(text)
-    if not m:
-        return None
-    return yaml.safe_load(m.group(1)) or {}
+@lru_cache(maxsize=1)
+def load_schemas() -> dict:
+    """Lädt die JSON-Schema-Definitionen pro Typ aus schemas/frontmatter.yaml."""
+    data = yaml.safe_load(SCHEMA_PATH.read_text()) or {}
+    return data.get("types", {})
 
 
-def check_field(name: str, rule: dict, fm: dict) -> list[str]:
-    errors = []
-    present = name in fm and fm[name] not in (None, "")
-    if rule.get("required") and not present:
-        errors.append(f"Pflichtfeld '{name}' fehlt oder ist leer.")
-        return errors
-    if present and rule.get("type") == "enum":
-        if fm[name] not in rule.get("values", []):
-            allowed = ", ".join(rule["values"])
-            errors.append(f"Feld '{name}': '{fm[name]}' nicht erlaubt (erlaubt: {allowed}).")
-    return errors
+def _normalize(metadata: dict) -> dict:
+    """YAML lädt ISO-Daten als date/datetime — JSON Schema 'format: date' prüft
+    aber nur Strings. Wir spiegeln solche Werte als ISO-String zurück, damit ein
+    echter Datums-Check stattfindet (statt ihn stillschweigend zu überspringen)."""
+    out = {}
+    for key, value in metadata.items():
+        if isinstance(value, (datetime.date, datetime.datetime)):
+            out[key] = value.isoformat()
+        else:
+            out[key] = value
+    return out
 
 
-def main() -> int:
-    if len(sys.argv) != 2:
+def validate_file(path) -> list[str]:
+    """Validiert eine Datei. Gibt eine Liste von Fehlermeldungen zurück (leer = ok)."""
+    path = Path(path)
+    try:
+        post = frontmatter.load(str(path))
+    except Exception as exc:  # kaputtes YAML, Encoding etc.
+        return [f"Frontmatter nicht lesbar: {exc}"]
+
+    if not post.metadata:
+        return ["Kein YAML-Frontmatter gefunden."]
+
+    metadata = _normalize(post.metadata)
+    doc_type = metadata.get("type")
+    schemas = load_schemas()
+
+    if doc_type not in schemas:
+        known = ", ".join(sorted(schemas)) or "(keine)"
+        return [f"Unbekannter type: {doc_type!r} (bekannt: {known})."]
+
+    validator = Draft202012Validator(schemas[doc_type], format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(metadata), key=lambda e: list(e.json_path))
+    return [f"{e.json_path}: {e.message}" for e in errors]
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    if not argv:
         print(__doc__)
         return 2
 
-    path = Path(sys.argv[1])
-    if not path.is_file():
-        print(f"Datei nicht gefunden: {path}")
-        return 2
-
-    text = path.read_text()
-    fm = parse_frontmatter(text)
-    if fm is None:
-        print("FEHLER: Kein YAML-Frontmatter gefunden.")
-        return 1
-
-    doc_type = fm.get("type")
-    schema = yaml.safe_load((ROOT / "schemas" / "frontmatter.yaml").read_text())
-    type_schema = schema.get("types", {}).get(doc_type)
-
-    if type_schema is None:
-        print(f"FEHLER: Typ '{doc_type}' nicht im Schema definiert.")
-        return 1
-
-    errors = []
-    for field_name, rule in type_schema.items():
-        if field_name.startswith("_") or not isinstance(rule, dict):
+    exit_code = 0
+    for arg in argv:
+        path = Path(arg)
+        if not path.is_file():
+            print(f"Datei nicht gefunden: {path}")
+            exit_code = 2
             continue
-        errors.extend(check_field(field_name, rule, fm))
 
-    if errors:
-        print(f"UNGÜLTIG: {path}")
-        for e in errors:
-            print(f"  - {e}")
-        return 1
+        errors = validate_file(path)
+        if errors:
+            print(f"UNGÜLTIG: {path}")
+            for e in errors:
+                print(f"  - {e}")
+            exit_code = exit_code or 1
+        else:
+            print(f"OK: {path}")
 
-    print(f"OK: {path} ({doc_type})")
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":

@@ -81,14 +81,14 @@ Ablauf:
 3. **Validieren** — `scripts/validate.py` prüft das Ergebnis gegen das Schema (Frontmatter, Pflicht-Sections, tote Links). Qualitäts-Gate für das selbst Erstellte.
 4. **Eintragen** — Der neue Typ kommt in `config.yaml`, ab da kennt ihn das Werkzeug.
 
-> [!info] Warum Prompt-Vorlagen statt fester AI-Integration
+> **INFO — Warum Prompt-Vorlagen statt fester AI-Integration:**
 > Reine Markdown-Prompts funktionieren mit **jeder** AI und bleiben lesbar/editierbar — konsistent mit der Drei-Bausteine-Regel. Keine Bindung an ein bestimmtes Tool.
 
 ---
 
 ## Wichtigste Designentscheidung: HTML nur als *Zielformat*
 
-> [!info] HTML-Regel
+> **INFO — HTML-Regel:**
 > HTML wird **nur** verwendet, wenn das **Endprodukt** HTML ist (z. B. ein Email-Newsletter, der im Postfach gerendert wird).
 > Für Regeln, Templates, Doku und Prompts bleibt **Markdown das Primärformat**.
 
@@ -127,8 +127,8 @@ AI_docs/
 │   ├── spec.md
 │   └── newsletter.html.j2 #   echtes HTML mit Jinja2-Platzhaltern & Schleifen
 │
-├── schemas/               # maschinenlesbare Feld-Definitionen
-│   └── frontmatter.yaml   #   welche Felder pro Typ, welche Pflicht, welcher Typ
+├── schemas/               # maschinenlesbare Feld-Definitionen (JSON Schema pro Typ)
+│   └── frontmatter.yaml   #   Pflichtfelder, Typen, enum, Datumsformat, additionalProperties
 │
 └── scripts/               # Logik (Python + Jinja2) — nur die drei Bausteine
     ├── new_doc.py         #   Typ wählen → Template rendern → Zieldatei
@@ -160,7 +160,7 @@ Nutzt ein mitgeliefertes Starter-Set, erzeugt ein korrekt strukturiertes Dokumen
 ```bash
 python scripts/validate.py pfad/zur/datei.md
 ```
-Frontmatter vollständig? Pflicht-Sections da? Tote Links? → klare Fehlerliste. Taugt auch als Pre-Commit-Hook.
+Frontmatter gegen das JSON Schema des Typs geprüft (Pflichtfelder, Typen, enum, Datumsformat, unbekannte Felder) → klare Fehlerliste. Nimmt mehrere Pfade auf einmal, taugt damit als Pre-Commit-Hook. (Pflicht-Sections- und Tote-Links-Checks sind noch offen, siehe unten.)
 
 ---
 
@@ -184,7 +184,7 @@ Auch für Markdown-Templates. Ein einziger Renderer für alle Formate, reine Pla
 - [x] `config.yaml` + `schemas/frontmatter.yaml`
 - [x] Prompt-Vorlagen: `describe-type`, `make-ruleset`, `make-template`
 - [x] Starter-Bibliothek (5 Sets): `_global`, `session-log`, `agent-instructions`, `spec`, `newsletter`
-- [x] `new_doc.py` (Jinja2-Rendering) + `validate.py` (Frontmatter-/Enum-Checks) — end-to-end getestet
+- [x] `new_doc.py` (Jinja2-Rendering) + `validate.py` (JSON-Schema-Validierung des Frontmatter) — mit pytest-Fixtures getestet
 
 ## Mögliche nächste Schritte
 
