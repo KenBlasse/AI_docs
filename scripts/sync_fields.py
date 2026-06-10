@@ -26,6 +26,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = ROOT / "schemas" / "frontmatter.yaml"
+CONFIG_PATH = ROOT / "config.yaml"
 RULES_DIR = ROOT / "rules"
 TEMPLATES_DIR = ROOT / "templates"
 
@@ -36,6 +37,21 @@ END = "<!-- FIELDS:end -->"
 def load_schemas() -> dict:
     data = yaml.safe_load(SCHEMA_PATH.read_text()) or {}
     return data.get("types", {})
+
+
+def template_path_for(doc_type: str) -> Path | None:
+    """Liefert den in config.yaml hinterlegten Template-Pfad eines Typs (absolut).
+
+    None, wenn der Typ nicht in der Config steht oder die Config nicht lesbar ist —
+    dann fällt der Drift-Check auf die alte Konvention templates/<typ>.md zurück.
+    """
+    try:
+        config = yaml.safe_load(CONFIG_PATH.read_text()) or {}
+    except (OSError, yaml.YAMLError):
+        return None
+    spec = config.get("types", {}).get(doc_type, {})
+    rel = spec.get("template")
+    return ROOT / rel if rel else None
 
 
 def field_table(schema: dict) -> str:
@@ -102,10 +118,15 @@ def parse_template_frontmatter(text: str) -> dict[str, str]:
 
 
 def template_drift(doc_type: str, schema: dict) -> list[str]:
-    """Prüft, ob templates/<typ>.md zum Schema passt (Feld-Menge + type-Wert)."""
-    tpl = TEMPLATES_DIR / f"{doc_type}.md"
-    if not tpl.is_file():
-        return []  # HTML-Typen o. ä. haben kein MD-Template — kein Drift-Check
+    """Prüft, ob das Markdown-Template eines Typs zum Schema passt (Feld-Menge + type-Wert).
+
+    Der Template-Pfad kommt aus config.yaml (nicht hartkodiert), mit Fallback auf
+    die Konvention templates/<typ>.md. Nur Markdown-Templates haben YAML-Frontmatter;
+    HTML-Templates (Newsletter) werden übersprungen — kein Drift-Check.
+    """
+    tpl = template_path_for(doc_type) or TEMPLATES_DIR / f"{doc_type}.md"
+    if tpl.suffix != ".md" or not tpl.is_file():
+        return []
     meta = parse_template_frontmatter(tpl.read_text())
     schema_keys = set(schema.get("properties", {}))
     tpl_keys = set(meta)

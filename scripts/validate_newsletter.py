@@ -39,7 +39,6 @@ class NewsletterParser(HTMLParser):
         self.has_max_width = False
         self.title_text = ""
         self.in_title = False
-        self._depth_at_head_style: list[str] = []
         self.style_in_head = False
         self.in_head = False
 
@@ -56,7 +55,9 @@ class NewsletterParser(HTMLParser):
             self.in_title = True
         if tag == "script":
             self.has_script = True
-        if tag == "img" and not attrs_d.get("alt"):
+        # alt="" ist für dekorative Bilder der a11y-korrekte Weg (WCAG) — nur ein
+        # komplett fehlendes alt-Attribut ist ein Fehler.
+        if tag == "img" and "alt" not in attrs_d:
             self.imgs_without_alt += 1
         style = attrs_d.get("style", "")
         if "max-width" in style:

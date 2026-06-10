@@ -29,6 +29,12 @@ def test_img_with_alt_passes():
     assert not any("alt" in e for e in vn.validate_html(html))
 
 
+def test_img_with_empty_alt_passes():
+    """alt='' ist für dekorative Bilder a11y-korrekt (WCAG) — kein Fehler."""
+    html = "<html><head><title>T</title></head><body><div style='max-width:600px'><img src='a.png' alt=''></div></body></html>"
+    assert not any("alt" in e for e in vn.validate_html(html))
+
+
 def test_missing_title_is_rejected():
     html = "<html><head><title></title></head><body><div style='max-width:600px'>x</div></body></html>"
     assert any("title" in e.lower() for e in vn.validate_html(html))

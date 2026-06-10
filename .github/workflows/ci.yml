@@ -30,10 +30,14 @@ jobs:
       - name: Newsletter-Template valide
         run: python scripts/validate_newsletter.py --template
 
-      - name: Ausgelieferte Dokumente validieren
+      # out/ ist ein lokaler Staging-Ordner (gitignored) — in CI nie vorhanden.
+      # Geprüft wird hier, dass die Werkzeuge selbst sauber validieren: die
+      # mitgelieferten Beispiel-Dokumente. Die Validierung echter out/-Docs
+      # passiert lokal beim Erzeugen (new_doc.py --validate).
+      - name: Beispiel-Dokumente validieren
         run: |
           shopt -s nullglob
-          docs=(out/**/*.md tests/fixtures/valid/*.md)
+          docs=(tests/fixtures/valid/*.md)
           if [ ${#docs[@]} -gt 0 ]; then
             python scripts/validate.py "${docs[@]}"
           fi

@@ -3,17 +3,15 @@
 repos:
   - repo: local
     hooks:
+      # out/ ist ein gitignorierter Staging-Ordner — Dateien daraus werden nie
+      # gestaged, ein Hook darauf würde nie feuern. Die Validierung echter out/-Docs
+      # passiert lokal beim Erzeugen (new_doc.py --validate). Hier prüfen wir nur die
+      # versionierten Beispiel-Dokumente, damit das Schema selbst sauber bleibt.
       - id: validate-frontmatter
         name: Frontmatter gegen Schema validieren
         entry: python scripts/validate.py
         language: system
-        files: '^(out|tests/fixtures/valid)/.*\.md$'
-
-      - id: validate-newsletter
-        name: Newsletter-HTML härten
-        entry: python scripts/validate_newsletter.py
-        language: system
-        files: '^out/newsletter/.*\.html$'
+        files: '^tests/fixtures/valid/.*\.md$'
 
       - id: sync-fields
         name: Rule-Felder mit Schema in Sync
