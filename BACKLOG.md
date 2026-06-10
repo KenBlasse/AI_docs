@@ -3,8 +3,9 @@
 Stand: 2026-06-10. Umgesetzt sind **#1 (echtes Frontmatter-Parsing + JSON Schema)**,
 **#3 (Datumsformat wird erzwungen)** — siehe `scripts/validate.py`,
 `schemas/frontmatter.yaml`, `tests/` —, **#6 (Callout-Anspruch tool-neutral)**
-, **#2 (eine Quelle der Wahrheit für Felder)** und
-**#5 (new_doc.py: Kontextfelder & Robustheit)**.
+, **#2 (eine Quelle der Wahrheit für Felder)**,
+**#5 (new_doc.py: Kontextfelder & Robustheit)** und
+**#4 (Newsletter-HTML-Validierung)**.
 
 Die folgenden Punkte sind bewusst zurückgestellt, nach Wirkung sortiert.
 
@@ -23,15 +24,17 @@ Template-Frontmatter (pre-commit-/CI-tauglich), abgesichert durch `tests/test_sy
 
 ---
 
-## #4 — Newsletter (HTML) ist ein blinder Fleck
+## ✅ #4 — Newsletter (HTML) ist ein blinder Fleck (erledigt)
 
-**Problem:** Der HTML-Typ ist komplett von der Validierung ausgenommen — also
-genau der Typ, der am ehesten kaputtgeht (Jinja2→HTML, Mail-Client-Quirks).
+**War:** Der HTML-Typ war komplett von der Validierung ausgenommen — genau der
+Typ, der am ehesten kaputtgeht (Jinja2→HTML, Mail-Client-Quirks).
 
-**Nächster Schritt:**
-- Template rendern und mit `html.parser`/`lxml` auf Wohlgeformtheit prüfen.
-- Optional: Pflicht-Kontextvariablen (Betreff, Preheader) deklarieren und prüfen,
-  dass sie gesetzt sind.
+**Umgesetzt:** `scripts/validate_newsletter.py` prüft fertiges HTML (stdlib
+`html.parser`, keine Extra-Dependency): Wohlgeformtheit (balancierte Tags),
+Pflicht-Kontext (`title` gesetzt) und die Härtungsregeln aus `rules/newsletter.md`
+(kein `<script>`, `alt`-Texte, `max-width`-Container, kein `<style>` im `<head>`).
+`--template` rendert + prüft das Standard-Template. Abgesichert durch
+`tests/test_validate_newsletter.py`; Rule + Schema-Kommentar verweisen darauf.
 
 ---
 

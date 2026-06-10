@@ -37,6 +37,6 @@ types:
       created: { type: string, format: date }
       status:  { enum: [draft, approved, implemented] }
 
-  # newsletter: HTML-Output, kein YAML-Frontmatter — von der Frontmatter-Validierung
-  # ausgenommen. Eigene Validierung (Wohlgeformtheit, Pflicht-Kontextvariablen) ist
-  # als späterer Schritt dokumentiert, siehe rules/newsletter.md.
+  # newsletter: HTML-Output, kein YAML-Frontmatter — von dieser Frontmatter-
+  # Validierung ausgenommen. Eigene Prüfung (Wohlgeformtheit, Pflicht-Kontext,
+  # Mail-Client-Härtung) via scripts/validate_newsletter.py, siehe rules/newsletter.md.

@@ -27,3 +27,12 @@ Mail-Clients (Gmail, Outlook, Apple Mail) rendern kein Markdown und sind beim HT
 - JavaScript (wird von Mail-Clients entfernt/blockiert).
 - `<style>` im `<head>` als einzige Stilquelle (siehe Inline-CSS-Regel).
 - Mehrere konkurrierende CTAs.
+
+## Validierung
+
+`scripts/validate_newsletter.py` prüft das fertige HTML automatisch:
+
+- **Wohlgeformtheit** — balancierte Tags, parsebares HTML.
+- **Pflicht-Kontext** — `title` muss gesetzt sein (sonst leerer `<title>`/Postfach-Betreff).
+- **Härtung** — kein `<script>`, jedes `<img>` hat `alt`, ein `max-width`-Container
+  ist vorhanden, kein `<style>` im `<head>`.
