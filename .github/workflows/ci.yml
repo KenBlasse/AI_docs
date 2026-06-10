@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dependencies installieren
+        run: pip install -r requirements-dev.txt
+
+      - name: Tests
+        run: pytest -q
+
+      - name: Config & Schema konsistent
+        run: python scripts/validate_config.py
+
+      - name: Felder mit Schema in Sync
+        run: python scripts/sync_fields.py --check
+
+      - name: Newsletter-Template valide
+        run: python scripts/validate_newsletter.py --template
+
+      - name: Ausgelieferte Dokumente validieren
+        run: |
+          shopt -s nullglob
+          docs=(out/**/*.md tests/fixtures/valid/*.md)
+          if [ ${#docs[@]} -gt 0 ]; then
+            python scripts/validate.py "${docs[@]}"
+          fi

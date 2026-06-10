@@ -134,8 +134,13 @@ AI_docs/
     ├── new_doc.py             #   Typ wählen → Template rendern → Zieldatei
     ├── validate.py            #   Doc-Frontmatter gegen Schema prüfen
     ├── validate_newsletter.py #   Newsletter-HTML: Wohlgeformtheit + Mail-Client-Härtung
+    ├── validate_config.py     #   config.yaml & frontmatter.yaml gegen Meta-Schema
     └── sync_fields.py         #   Feld-Tabellen der Rules aus dem Schema erzeugen (+ --check)
 ```
+
+**Qualitäts-Gates:** `.github/workflows/ci.yml` (Tests + alle Validatoren bei Push/PR)
+und `.pre-commit-config.yaml` (`pip install pre-commit && pre-commit install`) lassen
+dieselben Checks vor jedem Commit über die geänderten Dateien laufen.
 
 > **INFO — Eine Quelle der Wahrheit für Felder:**
 > Pflichtfelder leben **nur** in `schemas/frontmatter.yaml`. Die „Frontmatter-Felder"-Tabelle in jeder Rule wird daraus generiert (`sync_fields.py`, Marker `<!-- FIELDS:start/end -->`), und `--check` meldet Drift zwischen Schema, Rules und Template-Frontmatter — pre-commit-/CI-tauglich.
@@ -199,5 +204,5 @@ Auch für Markdown-Templates. Ein einziger Renderer für alle Formate, reine Pla
 - [ ] `validate.py` um Section-Check (Pflicht-Überschriften vorhanden?) und Tote-Links-Check erweitern
 - [ ] Mehr Starter-Sets (z. B. `meeting-notes`, `adr`)
 - [x] Lint für Newsletter-HTML (Alt-Text, `max-width`, kein `<script>`/`<style>`-Head) → `validate_newsletter.py`
-- [ ] Pre-Commit-Hook-Beispiel, das `validate.py` über geänderte Docs laufen lässt
+- [x] Pre-Commit-Hook + CI, die die Validatoren über geänderte Docs laufen lassen → `.pre-commit-config.yaml`, `.github/workflows/ci.yml`
 ```
