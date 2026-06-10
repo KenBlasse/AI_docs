@@ -2,6 +2,19 @@
 
 Ein chronologisches Arbeitsjournal / Changelog. Ein Eintrag pro Arbeitseinheit (Session, Sprint, Tag), der für die *Zukunft* relevant ist.
 
+## Frontmatter-Felder
+
+<!-- FIELDS:start -->
+<!-- generiert aus schemas/frontmatter.yaml via scripts/sync_fields.py — nicht von Hand bearbeiten -->
+
+| Feld | Pflicht | Typ / Werte |
+| --- | --- | --- |
+| `title` | ja | Text (nicht leer) |
+| `type` | ja | `session-log` (fest) |
+| `created` | ja | Datum (`YYYY-MM-DD`) |
+
+<!-- FIELDS:end -->
+
 ## Was gehört rein
 
 Ein Eintrag, wenn **mindestens eines** zutrifft:

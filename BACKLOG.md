@@ -2,21 +2,24 @@
 
 Stand: 2026-06-10. Umgesetzt sind **#1 (echtes Frontmatter-Parsing + JSON Schema)**,
 **#3 (Datumsformat wird erzwungen)** — siehe `scripts/validate.py`,
-`schemas/frontmatter.yaml`, `tests/` — und **#6 (Callout-Anspruch tool-neutral)**.
+`schemas/frontmatter.yaml`, `tests/` —, **#6 (Callout-Anspruch tool-neutral)**
+, **#2 (eine Quelle der Wahrheit für Felder)** und
+**#5 (new_doc.py: Kontextfelder & Robustheit)**.
 
 Die folgenden Punkte sind bewusst zurückgestellt, nach Wirkung sortiert.
 
 ---
 
-## #2 — Eine einzige Quelle der Wahrheit für Felder
+## ✅ #2 — Eine einzige Quelle der Wahrheit für Felder (erledigt)
 
-**Problem:** Pflichtfelder stehen doppelt — maschinenlesbar in
-`schemas/frontmatter.yaml` und als Prosa in den Rule-Files (`rules/*.md`).
-Das driftet garantiert auseinander.
+**War:** Pflichtfelder standen doppelt — maschinenlesbar in
+`schemas/frontmatter.yaml` und als Prosa in den Rule-Files. Drift garantiert.
 
-**Nächster Schritt:** Schema bleibt die Maschinenquelle. Entweder die Rules
-referenzieren daraus (statt zu duplizieren), oder ein kleines Script generiert
-den Feld-Abschnitt der jeweiligen Rule aus dem Schema.
+**Umgesetzt:** `scripts/sync_fields.py` generiert die „Frontmatter-Felder"-Tabelle
+jeder Rule aus dem Schema (Marker `<!-- FIELDS:start/end -->`). Das Schema ist
+alleinige Quelle; `_global.md`/`spec.md`-Prosa verweist nur noch darauf.
+`--check`-Modus meldet Drift zwischen Schema, Rule-Tabellen und
+Template-Frontmatter (pre-commit-/CI-tauglich), abgesichert durch `tests/test_sync_fields.py`.
 
 ---
 
@@ -32,20 +35,23 @@ genau der Typ, der am ehesten kaputtgeht (Jinja2→HTML, Mail-Client-Quirks).
 
 ---
 
-## #5 — new_doc.py: Kontextfelder & Robustheit
+## ✅ #5 — new_doc.py: Kontextfelder & Robustheit (erledigt)
 
-**Problem A:** Das Template hat `{{ context }}`, `{{ cause }}`, `{{ lesson }}`
-(bzw. `purpose`, `architecture` …) mit Defaults, aber `render()` übergibt nur
-`title` und `created`. Alle optionalen Felder bleiben Platzhaltertext.
-→ Entweder CLI-Flags (`--field cause="..."`) durchreichen, **oder** ehrlich
-dokumentieren, dass das Template bewusst nur ein Gerüst mit Prompts ist (dann
-sind die `default()`-Werte überflüssig).
+**A (Kontextfelder):** `--field KEY=WERT` (mehrfach) reicht optionale Felder ins
+Template-Render durch; Defaults bleiben als Fallback. `templates/spec.md`
+nutzt jetzt `status: {{ status | default("draft") }}`, damit der Status
+überschreibbar ist.
 
-**Problem B (Robustheit):**
-- `slugify("###")` → leerer String → Datei heißt `.md`. Fallback auf z.B.
-  `untitled` + Kollisionsschutz (existierende Datei wird sonst kommentarlos
-  überschrieben).
-- Kein Abfangen von Config-/Template-Fehlern (KeyError bei kaputter Config).
+**B (Robustheit):**
+- `slugify("###")` → `untitled` statt `.md`.
+- Kollisionsschutz: gleicher Slug wird nummeriert (`-2`, `-3`); `--force`
+  erzwingt Überschreiben.
+- Config-/Template-Fehler werden abgefangen (`KeyError`/`YAMLError`/`TemplateError`)
+  → klare Meldung + Exit-Code statt Traceback.
+
+**Sicherheit:** Jinja2-`autoescape` via `select_autoescape` für HTML-Templates
+(Newsletter) — `--field`-Werte werden im HTML escaped (kein XSS). Markdown bleibt
+unescaped. Abgesichert durch `tests/test_new_doc.py`.
 
 ---
 

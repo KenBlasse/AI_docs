@@ -24,8 +24,8 @@ Das rendert überall identisch (GitHub, Pandoc, MkDocs, Mail-Client), kostet kau
 
 ## Jedes Dokument hat Frontmatter
 
-- YAML-Frontmatter am Dateianfang, mindestens: `title`, `type`, `created`.
-- Welche Felder ein Typ darüber hinaus verlangt, steht im typ-spezifischen Ruleset und in `schemas/frontmatter.yaml`.
+- YAML-Frontmatter am Dateianfang. Mindestens `title`, `type`, `created` — die meisten Typen teilen diese Basis.
+- **Welche Felder ein Typ genau verlangt, steht im typ-spezifischen Ruleset** (Abschnitt „Frontmatter-Felder", generiert aus `schemas/frontmatter.yaml`). Das Schema ist die alleinige Quelle der Wahrheit; die Rule-Tabellen werden daraus erzeugt (`scripts/sync_fields.py`).
 
 ## Ein gutes Ruleset ist kurz und entscheidbar
 
