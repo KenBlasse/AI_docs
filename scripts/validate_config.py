@@ -72,7 +72,7 @@ FRONTMATTER_META = {
 
 def _load(path: Path) -> tuple[dict | None, str | None]:
     try:
-        return yaml.safe_load(path.read_text()) or {}, None
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}, None
     except (OSError, yaml.YAMLError) as exc:
         return None, f"{path.name} nicht lesbar: {exc}"
 

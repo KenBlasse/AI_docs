@@ -43,7 +43,7 @@ def load_config() -> dict:
     """Lädt config.yaml. Gekapselt, damit Tests gezielt nur das Config-Laden
     umlenken können, ohne yaml.safe_load global zu patchen (was sonst auch den
     nachgelagerten Validator beim --validate-Lauf verseuchen würde)."""
-    return yaml.safe_load((ROOT / "config.yaml").read_text())
+    return yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
 
 
 def unique_path(out_dir: Path, slug: str, ext: str) -> Path:
@@ -153,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
         out_file = out_dir / f"{slug}.{extension}"
     else:
         out_file = unique_path(out_dir, slug, extension)
-    out_file.write_text(rendered)
+    out_file.write_text(rendered, encoding="utf-8")
 
     print(f"Erstellt: {out_file}")
     print(f"Regeln dazu: {spec.get('rules', '—')} (+ {global_rules})")

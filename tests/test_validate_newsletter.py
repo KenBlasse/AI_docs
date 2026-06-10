@@ -51,6 +51,18 @@ def test_missing_max_width_is_rejected():
     assert any("max-width" in e for e in vn.validate_html(html))
 
 
+def test_max_width_substring_does_not_count():
+    """'max-width' als Substring ohne echten px-Wert zählt nicht als Container."""
+    html = "<html><head><title>T</title></head><body><p style='max-widthhack'>x</p></body></html>"
+    assert any("max-width" in e for e in vn.validate_html(html))
+
+
+def test_oversized_max_width_is_rejected():
+    """Ein absurd großer max-width-Wert ist kein gültiger Mail-Container."""
+    html = "<html><head><title>T</title></head><body><div style='max-width:9999px'>x</div></body></html>"
+    assert any("max-width" in e for e in vn.validate_html(html))
+
+
 def test_style_in_head_is_rejected():
     html = "<html><head><title>T</title><style>p{color:red}</style></head><body><div style='max-width:600px'>x</div></body></html>"
     assert any("<style>" in e for e in vn.validate_html(html))
