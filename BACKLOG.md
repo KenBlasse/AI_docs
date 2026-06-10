@@ -3,7 +3,8 @@
 Stand: 2026-06-10. Umgesetzt sind **#1 (echtes Frontmatter-Parsing + JSON Schema)**,
 **#3 (Datumsformat wird erzwungen)** — siehe `scripts/validate.py`,
 `schemas/frontmatter.yaml`, `tests/` —, **#6 (Callout-Anspruch tool-neutral)**
-und **#2 (eine Quelle der Wahrheit für Felder)**.
+, **#2 (eine Quelle der Wahrheit für Felder)** und
+**#5 (new_doc.py: Kontextfelder & Robustheit)**.
 
 Die folgenden Punkte sind bewusst zurückgestellt, nach Wirkung sortiert.
 
@@ -34,20 +35,23 @@ genau der Typ, der am ehesten kaputtgeht (Jinja2→HTML, Mail-Client-Quirks).
 
 ---
 
-## #5 — new_doc.py: Kontextfelder & Robustheit
+## ✅ #5 — new_doc.py: Kontextfelder & Robustheit (erledigt)
 
-**Problem A:** Das Template hat `{{ context }}`, `{{ cause }}`, `{{ lesson }}`
-(bzw. `purpose`, `architecture` …) mit Defaults, aber `render()` übergibt nur
-`title` und `created`. Alle optionalen Felder bleiben Platzhaltertext.
-→ Entweder CLI-Flags (`--field cause="..."`) durchreichen, **oder** ehrlich
-dokumentieren, dass das Template bewusst nur ein Gerüst mit Prompts ist (dann
-sind die `default()`-Werte überflüssig).
+**A (Kontextfelder):** `--field KEY=WERT` (mehrfach) reicht optionale Felder ins
+Template-Render durch; Defaults bleiben als Fallback. `templates/spec.md`
+nutzt jetzt `status: {{ status | default("draft") }}`, damit der Status
+überschreibbar ist.
 
-**Problem B (Robustheit):**
-- `slugify("###")` → leerer String → Datei heißt `.md`. Fallback auf z.B.
-  `untitled` + Kollisionsschutz (existierende Datei wird sonst kommentarlos
-  überschrieben).
-- Kein Abfangen von Config-/Template-Fehlern (KeyError bei kaputter Config).
+**B (Robustheit):**
+- `slugify("###")` → `untitled` statt `.md`.
+- Kollisionsschutz: gleicher Slug wird nummeriert (`-2`, `-3`); `--force`
+  erzwingt Überschreiben.
+- Config-/Template-Fehler werden abgefangen (`KeyError`/`YAMLError`/`TemplateError`)
+  → klare Meldung + Exit-Code statt Traceback.
+
+**Sicherheit:** Jinja2-`autoescape` via `select_autoescape` für HTML-Templates
+(Newsletter) — `--field`-Werte werden im HTML escaped (kein XSS). Markdown bleibt
+unescaped. Abgesichert durch `tests/test_new_doc.py`.
 
 ---
 

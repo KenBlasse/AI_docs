@@ -2,7 +2,7 @@
 title: "{{ title }}"
 type: spec
 created: {{ created }}
-status: draft
+status: {{ status | default("draft") }}
 ---
 
 # Spec — {{ title }}

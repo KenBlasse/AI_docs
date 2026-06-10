@@ -150,8 +150,9 @@ AI_docs/
 ### A) Sofort loslegen mit der Bibliothek
 ```bash
 python scripts/new_doc.py session-log "Mein erster Eintrag"
+python scripts/new_doc.py spec "API-Umbau" --field status=approved
 ```
-Nutzt ein mitgeliefertes Starter-Set, erzeugt ein korrekt strukturiertes Dokument. Kein Setup nötig.
+Nutzt ein mitgeliefertes Starter-Set, erzeugt ein korrekt strukturiertes Dokument. Kein Setup nötig. Optionale Template-Felder lassen sich mit `--field KEY=WERT` direkt setzen (mehrfach möglich); ohne Angabe bleiben die Default-Prompts im Dokument, die du im Editor ausfüllst. Gleicher Titel zweimal → die Datei wird nummeriert (`-2`, `-3`), nicht überschrieben (`--force` erzwingt Überschreiben).
 
 ### B) Eigenen Typ mit AI erstellen
 1. `prompts/describe-type.md` ausfüllen (Was, für wen, welches Format).
