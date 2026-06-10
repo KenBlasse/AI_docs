@@ -19,8 +19,8 @@ Halte dich strikt an diese Maßstäbe:
 3. **Begründung nur, wo nicht offensichtlich.** Eine `Warum:`-Zeile bei Regeln, deren Sinn
    sich nicht von selbst erschließt.
 
-4. **Kritisches als Callout.** PFLICHT-Regeln als `> [!danger]`, Warnungen als `> [!warning]`,
-   Kontext als `> [!info]`.
+4. **Kritisches abgesetzt mit Bold-Label.** PFLICHT-Regeln als `> **PFLICHT:**`, Warnungen als
+   `> **WARNUNG:**`, Kontext als `> **INFO:**` — tool-neutral, rendert überall identisch.
 
 5. **Markdown bleibt Primärformat.** HTML nur erwähnen, wenn das Zielformat des Dokumenttyps
    zwingend HTML ist (z. B. Email-Newsletter).

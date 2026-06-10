@@ -10,13 +10,17 @@ Format-übergreifende Grundregeln. Gelten für **jeden** Dokumenttyp, sofern ein
 
 ## Kritische Regeln sichtbar machen
 
-Für PFLICHT-Regeln, Warnungen und wichtigen Kontext **Callout-Blöcke** statt HTML-Tags verwenden:
+Für PFLICHT-Regeln, Warnungen und wichtigen Kontext einen **abgesetzten Block mit Bold-Label** statt HTML-Tags verwenden:
 
-> [!danger] für Pflicht-Regeln und Sicherheits-Checks — kein Skip
-> [!warning] für Abweichungs- und Recovery-Hinweise
-> [!info] für Kontext und Begründungen
+> **PFLICHT:** für Pflicht-Regeln und Sicherheits-Checks — kein Skip
+>
+> **WARNUNG:** für Abweichungs- und Recovery-Hinweise
+>
+> **INFO:** für Kontext und Begründungen
 
-Callouts wirken beim Lesen mindestens so stark wie HTML-Tags, kosten kaum Tokens und sind sofort als kritisch erkennbar.
+Das rendert überall identisch (GitHub, Pandoc, MkDocs, Mail-Client), kostet kaum Tokens und ist sofort als kritisch erkennbar.
+
+**Warum so neutral:** Die `> [!danger]`-Callout-Syntax sieht stärker aus, ist aber Obsidian-/Docusaurus-spezifisch und rendert in reinem GitHub/Pandoc/MkDocs (default) nur als simples Blockquote ohne Label. Wer ausschließlich in einer Callout-fähigen Umgebung arbeitet, kann das typ-spezifische Ruleset entsprechend überschreiben.
 
 ## Jedes Dokument hat Frontmatter
 
@@ -25,7 +29,7 @@ Callouts wirken beim Lesen mindestens so stark wie HTML-Tags, kosten kaum Tokens
 
 ## Ein gutes Ruleset ist kurz und entscheidbar
 
-> [!info] Leitprinzip
+> **INFO — Leitprinzip:**
 > Die wertvollste Sektion jedes Rulesets ist eine klare **"Was gehört rein / Was gehört NICHT rein"**-Abgrenzung. Eine Regel, bei der man im Zweifelsfall *entscheiden* kann, schlägt drei Absätze Prosa.
 
 - Regeln sind Bullet-Points, keine Aufsätze.

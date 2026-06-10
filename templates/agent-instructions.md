@@ -4,7 +4,7 @@ type: agent-instructions
 created: {{ created }}
 ---
 
-> [!danger] Pflicht-Regeln — kein Skip
+> **PFLICHT — kein Skip:**
 > - {{ rule_1 | default("Die wichtigste nicht-verhandelbare Regel.") }}
 > - Beim Debuggen: Logs vollständig lesen → Hypothese → eine gezielte Änderung — kein blindes Iterieren.
 > - Bei Änderungen an > 2 Dateien oder breaking Changes: Plan zeigen und genehmigen lassen.

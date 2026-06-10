@@ -81,14 +81,14 @@ Ablauf:
 3. **Validieren** — `scripts/validate.py` prüft das Ergebnis gegen das Schema (Frontmatter, Pflicht-Sections, tote Links). Qualitäts-Gate für das selbst Erstellte.
 4. **Eintragen** — Der neue Typ kommt in `config.yaml`, ab da kennt ihn das Werkzeug.
 
-> [!info] Warum Prompt-Vorlagen statt fester AI-Integration
+> **INFO — Warum Prompt-Vorlagen statt fester AI-Integration:**
 > Reine Markdown-Prompts funktionieren mit **jeder** AI und bleiben lesbar/editierbar — konsistent mit der Drei-Bausteine-Regel. Keine Bindung an ein bestimmtes Tool.
 
 ---
 
 ## Wichtigste Designentscheidung: HTML nur als *Zielformat*
 
-> [!info] HTML-Regel
+> **INFO — HTML-Regel:**
 > HTML wird **nur** verwendet, wenn das **Endprodukt** HTML ist (z. B. ein Email-Newsletter, der im Postfach gerendert wird).
 > Für Regeln, Templates, Doku und Prompts bleibt **Markdown das Primärformat**.
 

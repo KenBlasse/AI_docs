@@ -1,8 +1,8 @@
 # Backlog — offene Verbesserungen aus der Code-Review
 
-Stand: 2026-06-10. Umgesetzt sind **#1 (echtes Frontmatter-Parsing + JSON Schema)**
-und **#3 (Datumsformat wird erzwungen)** — siehe `scripts/validate.py`,
-`schemas/frontmatter.yaml`, `tests/`.
+Stand: 2026-06-10. Umgesetzt sind **#1 (echtes Frontmatter-Parsing + JSON Schema)**,
+**#3 (Datumsformat wird erzwungen)** — siehe `scripts/validate.py`,
+`schemas/frontmatter.yaml`, `tests/` — und **#6 (Callout-Anspruch tool-neutral)**.
 
 Die folgenden Punkte sind bewusst zurückgestellt, nach Wirkung sortiert.
 
@@ -49,15 +49,17 @@ sind die `default()`-Werte überflüssig).
 
 ---
 
-## #6 — Callout-Anspruch ehrlich machen
+## ✅ #6 — Callout-Anspruch ehrlich machen (erledigt)
 
-**Problem:** `rules/_global.md` verkauft `> [!danger]` als format-übergreifend.
-Das ist Obsidian/Docusaurus-Syntax und rendert in reinem GitHub/Pandoc/MkDocs
-(default) nicht.
+**War:** `rules/_global.md` verkaufte `> [!danger]` als format-übergreifend —
+Obsidian/Docusaurus-Syntax, die in reinem GitHub/Pandoc/MkDocs (default) nur als
+simples Blockquote ohne Label rendert.
 
-**Nächster Schritt:** In der Rule benennen ("setzt Obsidian-kompatibles
-Callout-Rendering voraus") **oder** tool-neutralen Fallback (Blockquote +
-Bold-Label) als Default empfehlen.
+**Umgesetzt:** Tool-neutraler Default (Blockquote + Bold-Label,
+`> **PFLICHT:** / **WARNUNG:** / **INFO:**`) in der Rule empfohlen, mit
+`**Warum so neutral:**`-Begründung. Alle aktiven Callout-Blöcke in `rules/`,
+`prompts/`, `templates/` und `README.md` entsprechend umgestellt. Wer in einer
+Callout-fähigen Umgebung arbeitet, kann das typ-spezifische Ruleset überschreiben.
 
 ---
 

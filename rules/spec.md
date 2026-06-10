@@ -23,5 +23,5 @@ Ein Design- / Konzept-Dokument. Hält fest, *was* gebaut wird und *warum*, **bev
 - Ein Kurz-Zitat-Block oben (`>`) mit Stand und Herkunft des Dokuments.
 - Entscheidungen als Tabelle, nicht als Fließtext — macht Trade-offs vergleichbar.
 
-> [!info] Designprinzip
+> **INFO — Designprinzip:**
 > Eine gute Spec erklärt **warum**, nicht nur **was**. Das *Was* veraltet, das *Warum* hilft beim nächsten Umbau.

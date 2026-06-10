@@ -15,7 +15,7 @@ Mail-Clients (Gmail, Outlook, Apple Mail) rendern kein Markdown und sind beim HT
 
 ## Email-HTML-Regeln (PFLICHT)
 
-> [!danger] Mail-Client-Härtung — sonst bricht das Layout
+> **PFLICHT — Mail-Client-Härtung, sonst bricht das Layout:**
 > - **Inline-CSS** verwenden — viele Clients strippen `<style>`-Blöcke und `<head>`.
 > - **Tabellen-Layout** (`<table>`) statt Flexbox/Grid — alte Clients (Outlook) können kein modernes CSS.
 > - Feste **max-width ~600px** für den Inhalts-Container.
