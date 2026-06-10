@@ -4,7 +4,7 @@ Ein leichtgewichtiges Framework, mit dem jeder **zusammen mit einer AI** sinnvol
 
 Repo: https://github.com/KenBlasse/AI_docs
 
-> **Status:** Lauffähiger Prototyp. Starter-Bibliothek (5 Sets), AI-Prompts und beide Skripte sind da und getestet.
+> **Status:** Lauffähig & getestet. Starter-Bibliothek (5 Sets), AI-Prompts, fünf Skripte (Erzeugen, Validieren, Newsletter-/Config-Checks, Feld-Sync), CI + pre-commit. 48 pytest-Tests grün.
 
 ## Schnellstart
 
@@ -51,7 +51,7 @@ AI_docs kennt absichtlich nur drei Dateitypen. Diese Beschränkung ist ein Featu
 | Baustein | Rolle | Beispiel |
 |----------|-------|----------|
 | **Markdown** | Regeln, Doku, Templates für Text, **AI-Prompt-Vorlagen** | `rules/note.md`, `templates/note.md` |
-| **Python** | Logik: Templates rendern, Dokumente validieren | `scripts/new_doc.py`, `scripts/validate.py` |
+| **Python** | Logik: Templates rendern, Dokumente & Config validieren | `scripts/new_doc.py`, `scripts/validate.py` (+ `validate_newsletter.py`, `validate_config.py`, `sync_fields.py`) |
 | **HTML** | Nur als **Zielformat**, wenn das Endprodukt HTML ist | `templates/newsletter.html.j2` |
 
 ---
@@ -78,8 +78,8 @@ Ablauf:
 
 1. **Beschreiben** — Du füllst eine kurze Vorlage aus: Welchen Dokumenttyp willst du? Wer liest ihn? Welches Format soll raus?
 2. **Generieren** — Die Prompt-Vorlage instruiert die AI, ein passendes **Ruleset** (`rules/<typ>.md`) und **Template** (`templates/<typ>.*`) zu erzeugen — mit den mitgelieferten Starter-Sets als Qualitäts-Referenz.
-3. **Validieren** — `scripts/validate.py` prüft das Ergebnis gegen das Schema (Frontmatter, Pflicht-Sections, tote Links). Qualitäts-Gate für das selbst Erstellte.
-4. **Eintragen** — Der neue Typ kommt in `config.yaml`, ab da kennt ihn das Werkzeug.
+3. **Validieren** — `scripts/validate.py` prüft das Frontmatter gegen das JSON Schema des Typs (Pflichtfelder, Typen, enum, Datum, unbekannte Felder); für Newsletter prüft `validate_newsletter.py` das HTML. Qualitäts-Gate für das selbst Erstellte. (Pflicht-Sections- und Tote-Links-Checks sind noch offen.)
+4. **Eintragen** — Der neue Typ kommt in `config.yaml` und sein Schema in `schemas/frontmatter.yaml`; `sync_fields.py` schreibt die Feld-Tabelle in die Rule. Ab da kennt ihn das Werkzeug.
 
 > **INFO — Warum Prompt-Vorlagen statt fester AI-Integration:**
 > Reine Markdown-Prompts funktionieren mit **jeder** AI und bleiben lesbar/editierbar — konsistent mit der Drei-Bausteine-Regel. Keine Bindung an ein bestimmtes Tool.
@@ -188,16 +188,18 @@ Auch für Markdown-Templates. Ein einziger Renderer für alle Formate, reine Pla
 - **Keine anderen Dateitypen** als MD, PY, HTML. Die Beschränkung ist Absicht.
 - **Keine Kopplung an ein bestimmtes Tool, Vault oder AI-Anbieter.** Prompts sind tool-agnostisch, Defaults über `config.yaml` ersetzbar.
 - **Kein Editor / kein UI.** Geschrieben wird im gewohnten Editor; AI_docs liefert Struktur, AI-Anleitung und Validierung.
-- **Keine schwere Infrastruktur.** Ein paar Ordner, eine Config, zwei Skripte, ein Satz Prompts. "Framework" meint *Konvention + Werkzeug*, nicht ein großes System.
+- **Keine schwere Infrastruktur.** Ein paar Ordner, eine Config, eine Handvoll kleiner Skripte, ein Satz Prompts. "Framework" meint *Konvention + Werkzeug*, nicht ein großes System.
 
 ---
 
 ## Was schon da ist
 
-- [x] `config.yaml` + `schemas/frontmatter.yaml`
+- [x] `config.yaml` + `schemas/frontmatter.yaml` (einzige Quelle der Wahrheit für Felder)
 - [x] Prompt-Vorlagen: `describe-type`, `make-ruleset`, `make-template`
 - [x] Starter-Bibliothek (5 Sets): `_global`, `session-log`, `agent-instructions`, `spec`, `newsletter`
-- [x] `new_doc.py` (Jinja2-Rendering) + `validate.py` (JSON-Schema-Validierung des Frontmatter) — mit pytest-Fixtures getestet
+- [x] `new_doc.py` (Jinja2-Rendering, `--field`, Kollisionsschutz, autoescape)
+- [x] `validate.py` (Frontmatter/JSON Schema), `validate_newsletter.py` (HTML-Härtung), `validate_config.py` (Meta-Schema), `sync_fields.py` (Rule-Tabellen aus Schema, `--check`)
+- [x] CI (`.github/workflows/ci.yml`) + pre-commit (`.pre-commit-config.yaml`); 48 pytest-Tests
 
 ## Mögliche nächste Schritte
 
