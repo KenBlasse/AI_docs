@@ -212,3 +212,7 @@ Auch für Markdown-Templates. Ein einziger Renderer für alle Formate, reine Pla
 - [x] Lint für Newsletter-HTML (Alt-Text, `max-width`, kein `<script>`/`<style>`-Head) → `validate_newsletter.py`
 - [x] Pre-Commit-Hook + CI, die die Validatoren über geänderte Docs laufen lassen → `.pre-commit-config.yaml`, `.github/workflows/ci.yml`
 ```
+
+## Lizenz
+
+MIT — siehe [LICENSE](LICENSE). Bewusst permissiv, damit das Framework frei genutzt, angepasst und weitergegeben werden kann.
